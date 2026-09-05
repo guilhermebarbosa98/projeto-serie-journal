@@ -1,0 +1,109 @@
+.serie-card {
+  display: grid;
+  grid-template-columns: 64px 1fr auto;
+  gap: 20px;
+  align-items: center;
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: 18px 20px;
+}
+
+.serie-card__stub {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--color-surface-alt);
+  border-right: 1px dashed var(--color-border);
+  border-radius: 8px;
+  padding: 10px 4px;
+  font-family: var(--font-mono);
+  color: var(--color-accent);
+}
+
+.serie-card__stub span {
+  font-size: 1.3rem;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.serie-card__stub small {
+  color: var(--color-text-muted);
+  font-size: 0.62rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.serie-card__headline {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+
+.serie-card__headline h3 {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.serie-card__tag {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-teal);
+  background-color: rgba(94, 201, 184, 0.12);
+  padding: 3px 8px;
+  border-radius: 5px;
+}
+
+.serie-card__meta {
+  display: grid;
+  grid-template-columns: repeat(4, auto);
+  gap: 4px 28px;
+  margin: 0;
+}
+
+.serie-card__meta dt {
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-text-muted);
+}
+
+.serie-card__meta dd {
+  margin: 0;
+  font-size: 0.86rem;
+  font-family: var(--font-mono);
+}
+
+.serie-card__actions {
+  display: flex;
+  gap: 8px;
+}
+
+@media (max-width: 720px) {
+  .serie-card {
+    grid-template-columns: 1fr;
+  }
+
+  .serie-card__stub {
+    flex-direction: row;
+    gap: 6px;
+    justify-content: flex-start;
+    border-right: none;
+    border-bottom: 1px dashed var(--color-border);
+    border-radius: 8px 8px 0 0;
+    padding-bottom: 10px;
+  }
+
+  .serie-card__meta {
+    grid-template-columns: repeat(2, auto);
+  }
+
+  .serie-card__actions {
+    justify-content: flex-end;
+  }
+}

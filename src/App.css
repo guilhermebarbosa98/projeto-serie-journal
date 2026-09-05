@@ -1,0 +1,15 @@
+.section-heading {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 40px;
+}
+
+.section-heading h1 {
+  font-size: clamp(1.8rem, 3.5vw, 2.4rem);
+}
+
+.section-heading p {
+  max-width: 52ch;
+  margin: 0;
+}
