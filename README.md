@@ -1,4 +1,4 @@
-# SérieJournal — Fase 2
+# SérieJournal 
 
 Projeto desenvolvido para a disciplina **Desenvolvimento de Sistemas Frontend**.
 
