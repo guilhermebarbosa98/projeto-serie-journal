@@ -1,61 +1,91 @@
 import { useState } from 'react';
-import './SerieForm.css';
+import Box from '@mui/material/Box';
+import Paper from '@mui/material/Paper';
+import Grid from '@mui/material/Grid';
+import TextField from '@mui/material/TextField';
+import MenuItem from '@mui/material/MenuItem';
+import Button from '@mui/material/Button';
+import Alert from '@mui/material/Alert';
+import CircularProgress from '@mui/material/CircularProgress';
 
 const emptyForm = {
-  titulo: '',
-  temporadas: '',
-  dataLancamento: '',
-  diretor: '',
-  produtora: '',
-  categoria: '',
-  dataAssistiu: '',
+  title: '',
+  seasons: '',
+  releaseDate: '',
+  director: '',
+  production: '',
+  category: '',
+  watchedAt: '',
 };
 
-const categorias = ['Drama', 'Comédia', 'Ação', 'Suspense', 'Ficção Científica', 'Documentário', 'Animação', 'Outra'];
+const categorias = [
+  'Drama',
+  'Comédia',
+  'Ação',
+  'Suspense',
+  'Ficção Científica',
+  'Documentário',
+  'Animação',
+  'Outra',
+];
 
 function validate(values) {
   const errors = {};
 
-  if (!values.titulo.trim()) {
-    errors.titulo = 'Informe o título da série.';
+  if (!values.title.trim()) {
+    errors.title = 'Informe o título da série.';
   }
 
-  if (!values.temporadas) {
-    errors.temporadas = 'Informe o número de temporadas.';
-  } else if (Number(values.temporadas) <= 0) {
-    errors.temporadas = 'O número de temporadas deve ser maior que zero.';
+  if (!values.seasons) {
+    errors.seasons = 'Informe o número de temporadas.';
+  } else if (Number(values.seasons) <= 0) {
+    errors.seasons = 'O número de temporadas deve ser maior que zero.';
   }
 
-  if (!values.dataLancamento) {
-    errors.dataLancamento = 'Informe a data de lançamento.';
+  if (!values.releaseDate) {
+    errors.releaseDate = 'Informe a data de lançamento.';
   }
 
-  if (!values.diretor.trim()) {
-    errors.diretor = 'Informe o nome do diretor.';
+  if (!values.director.trim()) {
+    errors.director = 'Informe o nome do diretor.';
   }
 
-  if (!values.produtora.trim()) {
-    errors.produtora = 'Informe a produtora.';
+  if (!values.production.trim()) {
+    errors.production = 'Informe a produtora.';
   }
 
-  if (!values.categoria) {
-    errors.categoria = 'Selecione uma categoria.';
+  if (!values.category) {
+    errors.category = 'Selecione uma categoria.';
   }
 
-  if (!values.dataAssistiu) {
-    errors.dataAssistiu = 'Informe a data em que assistiu.';
-  } else if (values.dataLancamento && values.dataAssistiu < values.dataLancamento) {
-    errors.dataAssistiu = 'A data assistida não pode ser anterior ao lançamento.';
+  if (!values.watchedAt) {
+    errors.watchedAt = 'Informe a data em que assistiu.';
+  } else if (values.releaseDate && values.watchedAt < values.releaseDate) {
+    errors.watchedAt = 'A data assistida não pode ser anterior ao lançamento.';
   }
 
   return errors;
 }
 
+function toFormValues(serie) {
+  if (!serie) return emptyForm;
+  return {
+    title: serie.title ?? '',
+    seasons: serie.seasons ?? '',
+    releaseDate: serie.releaseDate ?? '',
+    director: serie.director ?? '',
+    production: serie.production ?? '',
+    category: serie.category ?? '',
+    watchedAt: serie.watchedAt ?? '',
+  };
+}
+
 function SerieForm({ initialData, onSubmit, submitLabel = 'Cadastrar série', onCancel }) {
-  const [values, setValues] = useState(initialData || emptyForm);
+  const [values, setValues] = useState(() => toFormValues(initialData));
   const [errors, setErrors] = useState({});
   const [touched, setTouched] = useState({});
   const [feedback, setFeedback] = useState(null);
+  const [submitting, setSubmitting] = useState(false);
 
   function handleChange(event) {
     const { name, value } = event.target;
@@ -68,18 +98,18 @@ function SerieForm({ initialData, onSubmit, submitLabel = 'Cadastrar série', on
     setErrors(validate(values));
   }
 
-  function handleSubmit(event) {
+  async function handleSubmit(event) {
     event.preventDefault();
     const validationErrors = validate(values);
     setErrors(validationErrors);
     setTouched({
-      titulo: true,
-      temporadas: true,
-      dataLancamento: true,
-      diretor: true,
-      produtora: true,
-      categoria: true,
-      dataAssistiu: true,
+      title: true,
+      seasons: true,
+      releaseDate: true,
+      director: true,
+      production: true,
+      category: true,
+      watchedAt: true,
     });
 
     if (Object.keys(validationErrors).length > 0) {
@@ -87,159 +117,179 @@ function SerieForm({ initialData, onSubmit, submitLabel = 'Cadastrar série', on
       return;
     }
 
-    onSubmit({ ...values, temporadas: Number(values.temporadas) });
-    setFeedback({ type: 'success', message: 'Série salva com sucesso!' });
+    const payload = {
+      ...(initialData ? { id: initialData.id } : {}),
+      ...values,
+      seasons: Number(values.seasons),
+    };
 
-    if (!initialData) {
-      setValues(emptyForm);
-      setTouched({});
+    setSubmitting(true);
+    setFeedback(null);
+    try {
+      await onSubmit(payload);
+      setFeedback({ type: 'success', message: 'Série salva com sucesso!' });
+      if (!initialData) {
+        setValues(emptyForm);
+        setTouched({});
+      }
+    } catch (err) {
+      console.error(err);
+      setFeedback({
+        type: 'error',
+        message: 'Não foi possível salvar a série. Verifique se a API está em execução e tente novamente.',
+      });
+    } finally {
+      setSubmitting(false);
     }
   }
 
   function fieldError(name) {
-    return touched[name] && errors[name];
+    return touched[name] ? errors[name] : undefined;
   }
 
   return (
-    <form className="serie-form" onSubmit={handleSubmit} noValidate>
-      <div className="serie-form__grid">
-        <label className="serie-form__field serie-form__field--full">
-          <span>Título</span>
-          <input
-            type="text"
-            name="titulo"
-            value={values.titulo}
+    <Paper
+      component="form"
+      onSubmit={handleSubmit}
+      noValidate
+      variant="outlined"
+      sx={{ p: { xs: 3, sm: 4 } }}
+    >
+      <Grid container spacing={3}>
+        <Grid size={12}>
+          <TextField
+            fullWidth
+            label="Título"
+            name="title"
+            value={values.title}
             onChange={handleChange}
             onBlur={handleBlur}
             placeholder="Ex.: Breaking Bad"
-            aria-invalid={Boolean(fieldError('titulo'))}
+            error={Boolean(fieldError('title'))}
+            helperText={fieldError('title')}
           />
-          {fieldError('titulo') && <small className="serie-form__error">{errors.titulo}</small>}
-        </label>
+        </Grid>
 
-        <label className="serie-form__field">
-          <span>Número de temporadas</span>
-          <input
+        <Grid size={{ xs: 12, sm: 6 }}>
+          <TextField
+            fullWidth
             type="number"
-            name="temporadas"
-            min="1"
-            value={values.temporadas}
+            label="Número de temporadas"
+            name="seasons"
+            slotProps={{ htmlInput: { min: 1 } }}
+            value={values.seasons}
             onChange={handleChange}
             onBlur={handleBlur}
             placeholder="Ex.: 5"
-            aria-invalid={Boolean(fieldError('temporadas'))}
+            error={Boolean(fieldError('seasons'))}
+            helperText={fieldError('seasons')}
           />
-          {fieldError('temporadas') && (
-            <small className="serie-form__error">{errors.temporadas}</small>
-          )}
-        </label>
+        </Grid>
 
-        <label className="serie-form__field">
-          <span>Data de lançamento da temporada</span>
-          <input
+        <Grid size={{ xs: 12, sm: 6 }}>
+          <TextField
+            fullWidth
             type="date"
-            name="dataLancamento"
-            value={values.dataLancamento}
+            label="Data de lançamento da temporada"
+            name="releaseDate"
+            slotProps={{ inputLabel: { shrink: true } }}
+            value={values.releaseDate}
             onChange={handleChange}
             onBlur={handleBlur}
-            aria-invalid={Boolean(fieldError('dataLancamento'))}
+            error={Boolean(fieldError('releaseDate'))}
+            helperText={fieldError('releaseDate')}
           />
-          {fieldError('dataLancamento') && (
-            <small className="serie-form__error">{errors.dataLancamento}</small>
-          )}
-        </label>
+        </Grid>
 
-        <label className="serie-form__field">
-          <span>Diretor</span>
-          <input
-            type="text"
-            name="diretor"
-            value={values.diretor}
+        <Grid size={{ xs: 12, sm: 6 }}>
+          <TextField
+            fullWidth
+            label="Diretor"
+            name="director"
+            value={values.director}
             onChange={handleChange}
             onBlur={handleBlur}
             placeholder="Ex.: Vince Gilligan"
-            aria-invalid={Boolean(fieldError('diretor'))}
+            error={Boolean(fieldError('director'))}
+            helperText={fieldError('director')}
           />
-          {fieldError('diretor') && <small className="serie-form__error">{errors.diretor}</small>}
-        </label>
+        </Grid>
 
-        <label className="serie-form__field">
-          <span>Produtora</span>
-          <input
-            type="text"
-            name="produtora"
-            value={values.produtora}
+        <Grid size={{ xs: 12, sm: 6 }}>
+          <TextField
+            fullWidth
+            label="Produtora"
+            name="production"
+            value={values.production}
             onChange={handleChange}
             onBlur={handleBlur}
             placeholder="Ex.: Sony Pictures"
-            aria-invalid={Boolean(fieldError('produtora'))}
+            error={Boolean(fieldError('production'))}
+            helperText={fieldError('production')}
           />
-          {fieldError('produtora') && (
-            <small className="serie-form__error">{errors.produtora}</small>
-          )}
-        </label>
+        </Grid>
 
-        <label className="serie-form__field">
-          <span>Categoria</span>
-          <select
-            name="categoria"
-            value={values.categoria}
+        <Grid size={{ xs: 12, sm: 6 }}>
+          <TextField
+            select
+            fullWidth
+            label="Categoria"
+            name="category"
+            value={values.category}
             onChange={handleChange}
             onBlur={handleBlur}
-            aria-invalid={Boolean(fieldError('categoria'))}
+            error={Boolean(fieldError('category'))}
+            helperText={fieldError('category')}
           >
-            <option value="">Selecione...</option>
+            <MenuItem value="">
+              <em>Selecione...</em>
+            </MenuItem>
             {categorias.map((categoria) => (
-              <option key={categoria} value={categoria}>
+              <MenuItem key={categoria} value={categoria}>
                 {categoria}
-              </option>
+              </MenuItem>
             ))}
-          </select>
-          {fieldError('categoria') && (
-            <small className="serie-form__error">{errors.categoria}</small>
-          )}
-        </label>
+          </TextField>
+        </Grid>
 
-        <label className="serie-form__field">
-          <span>Data em que assistiu</span>
-          <input
+        <Grid size={{ xs: 12, sm: 6 }}>
+          <TextField
+            fullWidth
             type="date"
-            name="dataAssistiu"
-            value={values.dataAssistiu}
+            label="Data em que assistiu"
+            name="watchedAt"
+            slotProps={{ inputLabel: { shrink: true } }}
+            value={values.watchedAt}
             onChange={handleChange}
             onBlur={handleBlur}
-            aria-invalid={Boolean(fieldError('dataAssistiu'))}
+            error={Boolean(fieldError('watchedAt'))}
+            helperText={fieldError('watchedAt')}
           />
-          {fieldError('dataAssistiu') && (
-            <small className="serie-form__error">{errors.dataAssistiu}</small>
-          )}
-        </label>
-      </div>
+        </Grid>
+      </Grid>
 
       {feedback && (
-        <p
-          className={
-            feedback.type === 'success'
-              ? 'serie-form__feedback serie-form__feedback--success'
-              : 'serie-form__feedback serie-form__feedback--error'
-          }
-          role="status"
-        >
+        <Alert severity={feedback.type} sx={{ mt: 3 }} role="status">
           {feedback.message}
-        </p>
+        </Alert>
       )}
 
-      <div className="serie-form__actions">
+      <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1.5, mt: 3 }}>
         {onCancel && (
-          <button type="button" className="btn btn-ghost" onClick={onCancel}>
+          <Button variant="outlined" color="inherit" onClick={onCancel} disabled={submitting}>
             Cancelar
-          </button>
+          </Button>
         )}
-        <button type="submit" className="btn btn-primary">
-          {submitLabel}
-        </button>
-      </div>
-    </form>
+        <Button
+          type="submit"
+          variant="contained"
+          disabled={submitting}
+          startIcon={submitting ? <CircularProgress size={16} color="inherit" /> : null}
+        >
+          {submitting ? 'Salvando...' : submitLabel}
+        </Button>
+      </Box>
+    </Paper>
   );
 }
 

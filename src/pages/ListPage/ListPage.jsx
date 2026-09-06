@@ -1,19 +1,34 @@
+import Container from '@mui/material/Container';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 import SerieList from '../../components/SerieList/SerieList';
-import '../../App.css';
 
-function ListPage({ series, onDelete }) {
+function ListPage({ series, loading, error, onRetry, onDelete }) {
   return (
-    <main className="page">
-      <div className="container">
-        <div className="section-heading">
-          <span className="eyebrow">Estante</span>
-          <h1>Lista de séries</h1>
-          <p>Todas as séries que você já registrou, com edição e exclusão rápidas.</p>
-        </div>
+    <Container maxWidth="lg" sx={{ py: { xs: 5, md: 7 } }}>
+      <Box sx={{ mb: 4 }}>
+        <Typography
+          variant="overline"
+          sx={{ fontFamily: "'IBM Plex Mono', monospace", color: 'primary.main' }}
+        >
+          Estante
+        </Typography>
+        <Typography variant="h1" sx={{ fontSize: { xs: '1.8rem', md: '2.4rem' } }}>
+          Lista de séries
+        </Typography>
+        <Typography color="text.secondary">
+          Todas as séries que você já registrou, com edição e exclusão rápidas.
+        </Typography>
+      </Box>
 
-        <SerieList series={series} onDelete={onDelete} />
-      </div>
-    </main>
+      <SerieList
+        series={series}
+        loading={loading}
+        error={error}
+        onRetry={onRetry}
+        onDelete={onDelete}
+      />
+    </Container>
   );
 }
 
